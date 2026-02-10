@@ -12,7 +12,6 @@ def intent_detection(text):
     else:
         return "unknown"
 
-
 def knowledge_base(intent):
     data = {
         "price": "Product price is $100",
