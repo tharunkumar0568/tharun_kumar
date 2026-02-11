@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Chat – Java Assistant</title>
+
+<style>
+:root {
+    --bg: #f7f7f8;
+    --panel: #ffffff;
+    --border: #e5e7eb;
+    --text: #111827;
+    --muted: #6b7280;
+    --user: #f1f5f9;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: var(--text);
+}
+
+.chat-wrapper {
+    max-width: 760px;
+    margin: auto;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    font-weight: 600;
+}
+
+.header span {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: normal;
+}
+
+.messages {
+    flex: 1;
+    padding: 24px 20px;
+    overflow-y: auto;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 24px;
+}
+
+.message.user {
+    justify-content: flex-end;
+}
+
+.bubble {
+    max-width: 90%;
+    padding: 14px 16px;
+    border-radius: 8px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.user .bubble {
+    background: var(--user);
+}
+
+.bot .bubble {
+    background: var(--panel);
+    border: 1px solid var(--border);
+}
+
+.input-wrapper {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+}
+
+.input-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+textarea {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: 15px;
+    max-height: 160px;
+    font-family: inherit;
+}
+
+button {
+    background: #111827;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-wrapper">
+    <div class="header">
+        AI Chat – Java Assistant
+        <span>Casual + Java only</span>
+    </div>
+
+    <div class="messages" id="messages">
+        <div class="message bot">
+            <div class="bubble">
+                Hello 👋  
+                I can help you with <b>casual conversation</b> or 
+                <b>Java programming questions</b> like OOP, JVM, 
+                exceptions, collections, loops, and more.
+            </div>
+        </div>
+    </div>
+
+    <div class="input-wrapper">
+        <div class="input-box">
+            <textarea id="input" rows="1"
+             placeholder="Ask about Java..."
+             onkeydown="handleKey(event)"></textarea>
+            <button onclick="send()">Send</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        AI may produce inaccurate information. Java only.
+    </div>
+</div>
+
+<script>
+const messages = document.getElementById("messages");
+const input = document.getElementById("input");
+
+function addMessage(text, role) {
+    const msg = document.createElement("div");
+    msg.className = "message " + role;
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = text;
+
+    msg.appendChild(bubble);
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function send() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    addMessage(text, "user");
+    input.value = "";
+
+    fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text })
+    })
+    .then(res => res.json())
+    .then(data => {
+        addMessage(data.reply, "bot");
+    })
+    .catch(() => {
+        addMessage("⚠️ Server error", "bot");
+    });
+}
+
+function handleKey(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        send();
+    }
+}
+</script>
+
+</body>
+</html>
